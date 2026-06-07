@@ -59,7 +59,7 @@ dev = [
 
 [project.urls]
 Homepage = "https://phionyx.ai/runtime-evidence"
-Repository = "https://github.com/halvrenofviryel/phionyx_langchain_langgraph"
+Repository = "https://github.com/halvrenofviryel/phionyx-langchain-langgraph"
 Documentation = "https://phionyx.ai/start"
 
 [tool.setuptools.packages.find]
