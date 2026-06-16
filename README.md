@@ -16,7 +16,7 @@ LangGraph's supervisor patterns track *flow* but do not sign parent → child ha
 
 ## Position vs adjacent tooling
 
-- **vs LangSmith / Langfuse / Helicone**: observability tools record what happened; Phionyx makes what happened *signed, replayable, and third-party-verifiable*. The two layers compose — Phionyx envelope export to OTel / LangSmith is supported.
+- **vs LangSmith / Langfuse / Helicone**: observability tools record what happened; Phionyx makes what happened *signed, replayable, and independently verifiable*. The two layers compose — Phionyx envelope export to OTel / LangSmith is supported.
 - **vs OpenTelemetry GenAI conventions**: OTel conventions remain in active development. Phionyx envelopes are OTel-compatible while preserving stronger evidence semantics (hash chain + signature).
 - **vs A2A (Google Agent2Agent)**: A2A handles agent-to-agent delegation; Phionyx envelopes are designed protocol-agnostic. A future minor release of this adapter (the v1.1 milestone on this package's own roadmap) adds an explicit A2A agent-card adapter.
 
