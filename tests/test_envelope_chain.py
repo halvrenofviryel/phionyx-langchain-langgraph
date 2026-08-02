@@ -261,8 +261,10 @@ def test_module_level_verify_chain_on_empty_list() -> None:
     from phionyx_langchain_langgraph import verify_chain
 
     report = verify_chain([])
-    assert report["ok"] is True
+    assert report["ok"] is None
     assert report["envelope_count"] == 0
+    assert report["measurement_status"] == "NOT_MEASURED"
+    assert not report["ok"], "a caller testing truthiness must not see a pass"
 
 
 def test_module_level_verify_chain_on_handler_envelopes(tmp_path: Path) -> None:
