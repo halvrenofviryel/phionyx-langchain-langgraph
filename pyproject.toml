@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "phionyx-langchain-langgraph"
-version = "0.1.0a1"
+version = "0.1.0a2"
 description = "Native LangChain + LangGraph adapters for Phionyx runtime evidence — every chain, tool call, and LLM invocation emits a signed, hash-chained envelope entry."
 readme = "README.md"
 requires-python = ">=3.10"
