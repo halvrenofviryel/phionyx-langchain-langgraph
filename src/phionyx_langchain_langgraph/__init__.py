@@ -9,7 +9,7 @@ supervisor handoff is recorded as a signed, hash-chained envelope entry.
 Third parties can verify the chain offline without trusting the agent's
 narration.
 
-Status: alpha (v0.1.0a1.dev0) — M2 envelope emission.
+Status: alpha (v0.1.0a2.dev0) — M2 envelope emission.
 
 Public surface::
 
@@ -38,7 +38,7 @@ from .audit_chain import (
 from .langchain_handler import PhionyxCallbackHandler
 from .langgraph_handler import PhionyxLangGraphSupervisor
 
-__version__ = "0.1.0a1"
+__version__ = "0.1.0a2"
 __all__ = [
     "PhionyxCallbackHandler",
     "PhionyxLangGraphSupervisor",
