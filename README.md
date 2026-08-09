@@ -10,7 +10,7 @@ Every LangChain `chain`, `tool`, and `llm` event — and every LangGraph supervi
 
 ## Why
 
-LangChain ships an observability surface (LangSmith, callback handlers, tracing) optimized for *debugging*. It is not optimized for *third-party verification*: a callback log is mutable, unsigned, and the agent's own narration. Phionyx envelopes are immutable, hash-chained, and signed under the operator's Ed25519 key — they survive review even when the agent and the trace store are not trusted.
+LangChain ships an observability surface (LangSmith, callback handlers, tracing) optimized for *debugging*. It is not optimized for *third-party verification*: a callback log is mutable, unsigned, and the agent's own narration. Phionyx envelopes are append-only, hash-chained, and signed under the operator's key (Ed25519-capable; the demo default is HMAC) — they survive review even when the agent and the trace store are not trusted.
 
 LangGraph's supervisor patterns track *flow* but do not sign parent → child handoffs. Phionyx's multi-agent envelope schema (delivered in `phionyx-core` v0.6.0, shipped; latest engine is v0.9.0) adds full multi-agent envelope chains; this adapter is the ingestion surface today.
 
