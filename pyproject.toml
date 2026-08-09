@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "phionyx-langchain-langgraph"
 version = "0.1.0a2"
-description = "Native LangChain + LangGraph adapters for Phionyx runtime evidence — every chain, tool call, and LLM invocation emits a signed, hash-chained envelope entry."
+description = "Native LangChain + LangGraph adapters for Phionyx runtime evidence — every chain, tool call, and LLM invocation emits a hash-chained envelope entry (signed when a signer is configured; unsigned by default)."
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "AGPL-3.0-or-later"}

@@ -1,7 +1,7 @@
 """LangGraph supervisor adapter for Phionyx multi-agent evidence chains.
 
 M3 status: envelope-emitting. ``register`` and ``handoff`` produce
-signed, hash-chained envelopes against the same audit-chain infra used
+hash-chained envelopes (signed when a signer is configured) against the same audit-chain infra used
 by :class:`PhionyxCallbackHandler`. This makes Phionyx envelope chains
 the trust-object substrate above LangGraph supervisor flows (and the
 ingestion point for F5 multi-agent audit in v0.6.0).
@@ -36,6 +36,7 @@ from .audit_chain import (
     HmacSigner,
     Signer,
     build_envelope,
+    get_signer,
     canonical_json,
     verify_chain,
 )
@@ -68,7 +69,7 @@ def derive_child_trace_id(parent_trace_id: str, child_node: str) -> str:
 class PhionyxLangGraphSupervisor:
     """LangGraph supervisor adapter for Phionyx multi-agent evidence chains.
 
-    Each ``register`` and ``handoff`` call emits one signed envelope
+    Each ``register`` and ``handoff`` call emits one envelope (signed when a signer is configured)
     into the supervisor's own chain (separate from child chains). The
     derived child_trace_id naming convention (parent:child:<node>) lets
     verifiers join parent and child chains without any side-channel
@@ -79,7 +80,8 @@ class PhionyxLangGraphSupervisor:
     parent_trace_id:
         Trace ID of the parent supervisor run. Auto-generated if omitted.
     signer:
-        Signer instance. Defaults to :class:`HmacSigner`.
+        Signer instance. Defaults to ``get_signer()`` — env-selected (Ed25519 key →
+        Ed25519; ``PHIONYX_LANGCHAIN_DEMO=1`` → HmacSigner; else ``UnsignedSigner``).
     store:
         EnvelopeStore. Defaults to :class:`FilesystemEnvelopeStore`.
     sender / receiver:
@@ -115,7 +117,7 @@ class PhionyxLangGraphSupervisor:
     ) -> None:
         self.parent_trace_id = parent_trace_id or f"phionyx-langgraph-{uuid.uuid4().hex[:12]}"
         self._operator_signing_key = operator_signing_key
-        self._signer: Signer = signer or HmacSigner()
+        self._signer: Signer = signer or get_signer()
         self._store: EnvelopeStore = store or FilesystemEnvelopeStore()
         self._sender = sender or _DEFAULT_SUPERVISOR_SENDER
         self._receiver = receiver or _DEFAULT_RECEIVER
@@ -220,7 +222,7 @@ class PhionyxLangGraphSupervisor:
         to_node: str,
         payload: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
-        """Record a parent-coordinated handoff + emit a signed envelope.
+        """Record a parent-coordinated handoff + emit an envelope (signed when a signer is configured).
 
         The envelope payload includes both nodes by name and their
         derived child trace_ids (if either side is a registered child).

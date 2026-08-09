@@ -5,7 +5,8 @@ phionyx-langchain-langgraph
 Native LangChain + LangGraph adapters for Phionyx runtime evidence.
 
 Every LangChain chain / tool / LLM event and every LangGraph node /
-supervisor handoff is recorded as a signed, hash-chained envelope entry.
+supervisor handoff is recorded as a hash-chained envelope entry (signed when a
+signer is configured; unsigned by default).
 Third parties can verify the chain offline without trusting the agent's
 narration.
 

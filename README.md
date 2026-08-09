@@ -6,7 +6,7 @@ Native LangChain + LangGraph adapters for [Phionyx](https://phionyx.ai) runtime 
 
 **Where this sits in the Phionyx portfolio:** this is a **framework adapter** with its own version line (v0.1.0a1). It is distinct from the **engine** ([`phionyx-core`](https://pypi.org/project/phionyx-core/), latest v0.9.0 — the deterministic runtime whose envelope schema this adapter emits), the **self-governance gate** ([`phionyx-pipeline-mcp`](https://github.com/halvrenofviryel/phionyx-pipeline-mcp)), and the **AI Runtime Evidence Protocol (AIREP)** ([`ai-runtime-evidence-protocol`](https://github.com/halvrenofviryel/ai-runtime-evidence-protocol)) — the experimental, vendor-neutral open format for per-decision AI decision receipts that this adapter's envelopes aim to conform to. These are separate version namespaces and must not be cross-attributed.
 
-Every LangChain `chain`, `tool`, and `llm` event — and every LangGraph supervisor handoff — is recorded as a signed, hash-chained envelope entry. Third parties can verify the chain offline without trusting the agent's narration.
+Every LangChain `chain`, `tool`, and `llm` event — and every LangGraph supervisor handoff — is recorded as a hash-chained envelope entry (signed when a signer is configured; unsigned by default). Third parties can verify the chain offline without trusting the agent's narration.
 
 ## Why
 
@@ -36,7 +36,7 @@ from langchain_core.runnables import RunnableLambda
 from langchain_core.tools import tool
 from phionyx_langchain_langgraph import PhionyxCallbackHandler
 
-handler = PhionyxCallbackHandler()   # default HmacSigner + filesystem store
+handler = PhionyxCallbackHandler()   # UNSIGNED by default — set PHIONYX_LANGCHAIN_DEMO=1 (demo-HMAC) or PHIONYX_LANGCHAIN_SIGNING_KEY=<hex> (Ed25519); + filesystem store
 
 @tool
 def count_words(text: str) -> str:
@@ -49,7 +49,7 @@ count_words.invoke(
 )
 
 # Inspect, verify, export.
-print(f"{len(handler.envelopes)} signed envelopes")
+print(f"{len(handler.envelopes)} envelopes (unsigned by default; configure a signer to sign)")
 print(f"Chain verifies: {handler.verify_chain()['ok']}")
 handler.export_envelopes("evidence/run.jsonl")
 ```
@@ -108,9 +108,9 @@ side-channel metadata. This is the multi-agent ingestion surface.
 ## Status — what's live in v0.1.0a1
 
 - ✅ **PhionyxCallbackHandler** — `on_chain_*`, `on_tool_*`, `on_llm_*`
-  events + error variants emit signed envelopes.
+  events + error variants emit hash-chained envelopes (signed when a signer is configured).
 - ✅ **PhionyxLangGraphSupervisor** — `register` + `handoff` emit
-  signed envelopes; derived child trace_ids; parent/child chains
+  hash-chained envelopes (signed when a signer is configured); derived child trace_ids; parent/child chains
   coexist under one store root.
 - ✅ **AgentMessageEnvelope** as the inner record (from
   `phionyx_core.contracts.envelopes`).

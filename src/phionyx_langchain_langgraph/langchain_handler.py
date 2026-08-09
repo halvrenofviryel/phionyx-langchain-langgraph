@@ -3,7 +3,7 @@
 M2 status: envelope-emitting. Each LangChain callback event becomes:
     1. An ``AgentMessageEnvelope`` from ``phionyx_core.contracts.envelopes``
        capturing trace_id, turn_id, message_id, timestamp_utc, nonce, payload.
-    2. A signed, hash-chained outer envelope (see ``audit_chain.py``) that
+    2. A hash-chained outer envelope (see ``audit_chain.py``), signed when a signer is configured, that
        links the message to its predecessor in the chain and is signed by
        the operator's Signer.
 
@@ -38,6 +38,7 @@ from .audit_chain import (
     EnvelopeStore,
     FilesystemEnvelopeStore,
     HmacSigner,
+    get_signer,
     Signer,
     build_envelope,
     canonical_json,
@@ -82,7 +83,7 @@ class _PendingEvent:
 
 
 class PhionyxCallbackHandler(BaseCallbackHandler):
-    """LangChain callback handler that emits signed Phionyx envelopes per event.
+    """LangChain callback handler that emits hash-chained Phionyx envelopes (signed when a signer is configured) per event.
 
     Parameters
     ----------
@@ -93,7 +94,10 @@ class PhionyxCallbackHandler(BaseCallbackHandler):
         Reserved for Ed25519. M2 ships with :class:`HmacSigner` (demo). Pass
         a custom :class:`Signer` via ``signer=`` to override.
     signer:
-        Custom :class:`Signer` instance. Defaults to ``HmacSigner()``.
+        Custom :class:`Signer` instance. Defaults to ``get_signer()`` — env-selected:
+        ``PHIONYX_LANGCHAIN_SIGNING_KEY`` → Ed25519; ``PHIONYX_LANGCHAIN_DEMO=1`` →
+        HmacSigner (E0); otherwise ``UnsignedSigner`` (explicit ``unsigned``, never a
+        silent demo signature).
     store:
         Custom :class:`EnvelopeStore`. Defaults to :class:`FilesystemEnvelopeStore`
         rooted at ``~/.phionyx/langchain_audit`` (override via
@@ -120,7 +124,7 @@ class PhionyxCallbackHandler(BaseCallbackHandler):
         super().__init__()
         self.trace_id = trace_id or f"phionyx-langchain-{uuid.uuid4().hex[:12]}"
         self._operator_signing_key = operator_signing_key
-        self._signer: Signer = signer or HmacSigner()
+        self._signer: Signer = signer or get_signer()
         self._store: EnvelopeStore = store or FilesystemEnvelopeStore()
         self._sender = sender or _DEFAULT_SENDER
         self._receiver = receiver or _DEFAULT_RECEIVER
@@ -160,7 +164,7 @@ class PhionyxCallbackHandler(BaseCallbackHandler):
         parent_run_id: Any | None,
         payload: dict[str, Any],
     ) -> None:
-        """Record the event and emit a signed envelope into the chain."""
+        """Record the event and emit an envelope (signed when a signer is configured) into the chain."""
         with self._lock:
             now_iso = datetime.now(timezone.utc).isoformat()
             self._events.append(
