@@ -35,7 +35,7 @@ def _make_handler(tmp_path):
 def test_package_imports() -> None:
     import phionyx_langchain_langgraph as pkg
 
-    assert pkg.__version__.startswith("0.1.0a1")
+    assert pkg.__version__.startswith("0.1.0a2")
     assert hasattr(pkg, "PhionyxCallbackHandler")
     assert hasattr(pkg, "PhionyxLangGraphSupervisor")
     # M2 additions:
