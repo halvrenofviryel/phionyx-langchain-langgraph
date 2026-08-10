@@ -39,7 +39,7 @@ from .audit_chain import (
 from .langchain_handler import PhionyxCallbackHandler
 from .langgraph_handler import PhionyxLangGraphSupervisor
 
-__version__ = "0.1.0a2"
+__version__ = "0.1.0a3"
 __all__ = [
     "PhionyxCallbackHandler",
     "PhionyxLangGraphSupervisor",

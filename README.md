@@ -1,6 +1,6 @@
 # phionyx-langchain-langgraph
 
-> **Status:** alpha (v0.1.0a1) — live on PyPI. LangChain callback adapter, LangGraph supervisor adapter, and integration tests against real LangChain primitives all live.
+> **Status:** alpha (v0.1.0a3). LangChain callback adapter, LangGraph supervisor adapter, and integration tests against real LangChain primitives all implemented.
 
 Native LangChain + LangGraph adapters for [Phionyx](https://phionyx.ai) runtime evidence. This package surfaces on [phionyx.ai/narrative-coherence](https://phionyx.ai/narrative-coherence) as one of the framework adapters that turn third-party agent runs into reviewer-runnable evidence.
 
