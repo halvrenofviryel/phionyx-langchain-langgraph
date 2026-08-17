@@ -4,7 +4,7 @@
 
 Native LangChain + LangGraph adapters for [Phionyx](https://phionyx.ai) runtime evidence. This package surfaces on [phionyx.ai/narrative-coherence](https://phionyx.ai/narrative-coherence) as one of the framework adapters that turn third-party agent runs into reviewer-runnable evidence.
 
-**Where this sits in the Phionyx portfolio:** this is a **framework adapter** with its own version line (v0.1.0a3). It is distinct from the **engine** ([`phionyx-core`](https://pypi.org/project/phionyx-core/), latest v0.9.0 — the deterministic runtime whose envelope schema this adapter emits), the **self-governance gate** ([`phionyx-pipeline-mcp`](https://github.com/halvrenofviryel/phionyx-pipeline-mcp)), and the **AI Runtime Evidence Protocol (AIREP)** ([`ai-runtime-evidence-protocol`](https://github.com/halvrenofviryel/ai-runtime-evidence-protocol)) — the experimental, vendor-neutral open format for per-decision AI decision receipts that this adapter's envelopes aim to conform to. These are separate version namespaces and must not be cross-attributed.
+**Where this sits in the Phionyx portfolio:** this is a **framework adapter** with its own version line (v0.1.0a3). It is distinct from the **engine** ([`phionyx-core`](https://pypi.org/project/phionyx-core/), current release on PyPI — the deterministic runtime whose envelope schema this adapter emits), the **self-governance gate** ([`phionyx-pipeline-mcp`](https://github.com/halvrenofviryel/phionyx-pipeline-mcp)), and the **AI Runtime Evidence Protocol (AIREP)** ([`ai-runtime-evidence-protocol`](https://github.com/halvrenofviryel/ai-runtime-evidence-protocol)) — the experimental, vendor-neutral open format for per-decision AI decision receipts that this adapter's envelopes aim to conform to. These are separate version namespaces and must not be cross-attributed.
 
 Every LangChain `chain`, `tool`, and `llm` event — and every LangGraph supervisor handoff — is recorded as a hash-chained envelope entry (signed when a signer is configured; unsigned by default). Third parties can verify the chain offline without trusting the agent's narration.
 
@@ -12,7 +12,7 @@ Every LangChain `chain`, `tool`, and `llm` event — and every LangGraph supervi
 
 LangChain ships an observability surface (LangSmith, callback handlers, tracing) optimized for *debugging*. It is not optimized for *third-party verification*: a callback log is mutable, unsigned, and the agent's own narration. Phionyx envelopes are append-only, hash-chained, and signed under the operator's key (Ed25519-capable; the demo default is HMAC) — they survive review even when the agent and the trace store are not trusted.
 
-LangGraph's supervisor patterns track *flow* but do not sign parent → child handoffs. Phionyx's multi-agent envelope schema (delivered in `phionyx-core` v0.6.0, shipped; latest engine is v0.9.0) adds full multi-agent envelope chains; this adapter is the ingestion surface today.
+LangGraph's supervisor patterns track *flow* but do not sign parent → child handoffs. Phionyx's multi-agent envelope schema (delivered in `phionyx-core` v0.6.0, shipped) adds full multi-agent envelope chains; this adapter is the ingestion surface today.
 
 ## Position vs adjacent tooling
 
@@ -122,7 +122,7 @@ side-channel metadata. This is the multi-agent ingestion surface.
   integration (RunnableLambda, @tool, FakeListLLM, chain composition,
   tool error path, JSONL round-trip).
 
-Roadmap beyond v0.1.0a3: a v0.1.0 stable release that locks the schema against the current `phionyx-core` engine (latest v0.9.0), building on the multi-agent envelope wiring already shipped in `phionyx-core` v0.6.0.
+Roadmap beyond v0.1.0a3: a v0.1.0 stable release that locks the schema against the current `phionyx-core` engine (current release on PyPI), building on the multi-agent envelope wiring already shipped in `phionyx-core` v0.6.0.
 
 ## License
 
@@ -132,7 +132,7 @@ AGPL-3.0-or-later. Commercial dual-license available — contact founder@phionyx
 
 - [phionyx.ai/narrative-coherence](https://phionyx.ai/narrative-coherence) — entry pillar this package surfaces under
 - [phionyx.ai/evidence](https://phionyx.ai/evidence) — Evidence Matrix: every load-bearing claim paired with a reviewer-runnable command
-- [`phionyx-core`](https://pypi.org/project/phionyx-core/) (PyPI) — the deterministic **engine** (latest v0.9.0); core envelope schema + Ed25519 signing
+- [`phionyx-core`](https://pypi.org/project/phionyx-core/) (PyPI) — the deterministic **engine** (current release on PyPI); core envelope schema + Ed25519 signing
 - [`ai-runtime-evidence-protocol`](https://github.com/halvrenofviryel/ai-runtime-evidence-protocol) — **AI Runtime Evidence Protocol (AIREP)**, an experimental, vendor-neutral open format for a per-decision AI decision receipt: one signed, hash-chained, offline-checkable record per runtime decision, readable by anyone and tied to no vendor. The Phionyx **Reasoned Governance Envelope (RGE)** is developed alongside AIREP; a conformant projection between the two is **not implemented** (measured 2026-08-06: AIREP's own reference verifier rejects an RGE envelope handed to it directly) — so the envelopes this adapter writes are headed toward AIREP conformance
 - [`phionyx-mcp-server`](https://github.com/halvrenofviryel/phionyx-mcp-server) — MCP trust boundary companion
 - [`phionyx-pipeline-mcp`](https://github.com/halvrenofviryel/phionyx-pipeline-mcp) — agent self-claim **gate** companion that vets a claim before it is recorded as evidence
