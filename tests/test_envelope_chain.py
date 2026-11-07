@@ -41,6 +41,8 @@ def test_single_event_emits_one_envelope(tmp_path: Path) -> None:
     assert env["subject"]["event_type"] == "chain_start"
     assert env["subject"]["turn_index"] == 0
     assert env["subject"]["runtime"] == "phionyx-langchain-langgraph"
+    from importlib.metadata import version
+    assert env["subject"]["version"] == version("phionyx-langchain-langgraph")
     assert "message" in env
     assert "integrity" in env
 

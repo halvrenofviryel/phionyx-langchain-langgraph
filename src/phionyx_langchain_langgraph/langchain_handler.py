@@ -56,7 +56,7 @@ except ImportError:  # pragma: no cover — fallback for older installs
             "install with `pip install langchain-core>=0.2.0`."
         ) from exc
 
-__version__ = "0.1.0a1"
+from ._version import __version__
 
 # Default participant identities. Callers may override via constructor.
 _DEFAULT_SENDER = ParticipantRef(

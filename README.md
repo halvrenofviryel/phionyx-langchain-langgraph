@@ -1,16 +1,16 @@
 # phionyx-langchain-langgraph
 
-> **Status:** alpha (v0.1.0a3). LangChain callback adapter, LangGraph supervisor adapter, and integration tests against real LangChain primitives all implemented.
+> **Status:** alpha (v0.1.0a4). LangChain callback adapter, LangGraph supervisor adapter, and integration tests against real LangChain primitives all implemented.
 
 Native LangChain + LangGraph adapters for [Phionyx](https://phionyx.ai) runtime evidence. This package surfaces on [phionyx.ai/runtime-evidence](https://phionyx.ai/runtime-evidence) as one of the framework adapters that turn third-party agent runs into reviewer-runnable evidence.
 
-**Where this sits in the Phionyx portfolio:** this is a **framework adapter** with its own version line (v0.1.0a3). It is distinct from the **engine** ([`phionyx-core`](https://pypi.org/project/phionyx-core/), current release on PyPI — the deterministic runtime whose envelope schema this adapter emits), the **self-governance gate** ([`phionyx-pipeline-mcp`](https://github.com/halvrenofviryel/phionyx-pipeline-mcp)), and the **AI Runtime Evidence Protocol (AIREP)** ([`ai-runtime-evidence-protocol`](https://github.com/halvrenofviryel/ai-runtime-evidence-protocol)) — the experimental, vendor-neutral open format for per-decision AI decision receipts that this adapter's envelopes aim to conform to. These are separate version namespaces and must not be cross-attributed.
+**Where this sits in the Phionyx portfolio:** this is a **framework adapter** with its own version line (v0.1.0a4). It is distinct from the **engine** ([`phionyx-core`](https://pypi.org/project/phionyx-core/), current release on PyPI — the deterministic runtime whose envelope schema this adapter emits), the **self-governance gate** ([`phionyx-pipeline-mcp`](https://github.com/halvrenofviryel/phionyx-pipeline-mcp)), and the **AI Runtime Evidence Protocol (AIREP)** ([`ai-runtime-evidence-protocol`](https://github.com/halvrenofviryel/ai-runtime-evidence-protocol)) — the experimental, vendor-neutral open format for per-decision AI decision receipts that this adapter's envelopes aim to conform to. These are separate version namespaces and must not be cross-attributed.
 
-Each LangChain `chain`, `tool` and `llm` event delivered to the registered Phionyx callback handler — and each LangGraph supervisor handoff routed through the adapter — is recorded as a hash-chained envelope entry (signed when a signer is configured; unsigned by default). Third parties can re-verify the hash chain offline; a valid chain shows the recorded entries are intact, not that every event was captured or that the agent's narration is true.
+Each LangChain `chain`, `tool` and `llm` event delivered to the registered Phionyx callback handler — and each LangGraph supervisor handoff routed through the adapter — is recorded as a hash-chained envelope entry (signed when a signer is configured; unsigned by default). Third parties can re-verify the hash chain offline; a matching chain shows internal hash consistency. Without independent anchoring and authentication it does not rule out rewriting the chain, missing events or false narration.
 
 ## Why
 
-LangChain ships an observability surface (LangSmith, callback handlers, tracing) optimized for *debugging*. It is not optimized for *third-party verification*: a callback log is mutable, unsigned, and the agent's own narration. Phionyx envelopes are append-only, hash-chained, and signed under the operator's key (Ed25519-capable; the demo default is HMAC) — they survive review even when the agent and the trace store are not trusted.
+LangChain ships an observability surface (LangSmith, callback handlers, tracing) optimized for *debugging*. It is not optimized for *third-party verification*: a callback log is mutable, unsigned, and the agent's own narration. Phionyx envelopes link recorded payload hashes. They are unsigned by default; Ed25519 signing or demo-only HMAC must be explicitly configured. Hash checks alone do not authenticate an operator or prevent a party from rewriting and rehashing the whole chain.
 
 LangGraph's supervisor patterns track *flow* but do not sign parent → child handoffs. Phionyx's multi-agent envelope schema (delivered in `phionyx-core` v0.6.0, shipped) adds full multi-agent envelope chains; this adapter is the ingestion surface today.
 
@@ -19,6 +19,18 @@ LangGraph's supervisor patterns track *flow* but do not sign parent → child ha
 - **vs LangSmith / Langfuse / Helicone**: observability tools record what happened; Phionyx makes what happened *hash-chained, signed, and replayable within the recorded gate path*. No independent party has verified these records; that claim is not made. The two layers compose — Phionyx envelope export to OTel / LangSmith is supported.
 - **vs OpenTelemetry GenAI conventions**: OTel conventions remain in active development. Phionyx envelopes are OTel-compatible while preserving stronger evidence semantics (hash chain + signature).
 - **vs A2A (Google Agent2Agent)**: A2A handles agent-to-agent delegation; Phionyx envelopes are designed protocol-agnostic. A future minor release of this adapter (the v1.1 milestone on this package's own roadmap) adds an explicit A2A agent-card adapter.
+
+## Verification boundary
+
+`verify_chain()` checks payload hashes, previous-hash links and turn order.
+Its legacy `ok` field refers **only** to those checks. Every report now also
+returns `verification_scope: HASH_CHAIN_ONLY` and
+`signature_verification: NOT_EVALUATED`, including failures and empty input.
+A signature-only edit does not change the hash result; no signature is checked.
+Empty input returns `ok: null` / `NOT_MEASURED`, never PASS.
+For Ed25519 authentication a separate verifier must check the signature against
+a trusted public key. Capture completeness and truth need additional evidence.
+These adapter envelopes are not native AIREP artifacts.
 
 ## Install
 
@@ -50,7 +62,7 @@ count_words.invoke(
 
 # Inspect, verify, export.
 print(f"{len(handler.envelopes)} envelopes (unsigned by default; configure a signer to sign)")
-print(f"Chain verifies: {handler.verify_chain()['ok']}")
+print(f"Hash chain checks: {handler.verify_chain()['ok']}")
 handler.export_envelopes("evidence/run.jsonl")
 ```
 
@@ -67,7 +79,7 @@ Expected output:
     Tool result : 5 words
     LLM result  : the answer is forty-two.
     Envelopes   : 8 ({'tool_start': 1, 'tool_end': 1, 'chain_start': 2, 'llm_start': 1, 'llm_end': 1, 'chain_end': 2})
-    Verify chain: OK (8 envelopes; 0 errors)
+    Hash chain  : OK (8 envelopes; 0 errors)
     Exported    : 8 envelopes → /tmp/phionyx-demo-XXXXXXXX/quickstart-evidence.jsonl
 
 ## Multi-agent (LangGraph supervisor)
@@ -105,7 +117,7 @@ Child chains live in sibling directories under one store root, indexed
 by trace_id. Verifiers walk parent + child chains without any
 side-channel metadata. This is the multi-agent ingestion surface.
 
-## Status — what's live in v0.1.0a3
+## Status — what's live in v0.1.0a4
 
 - ✅ **PhionyxCallbackHandler** — `on_chain_*`, `on_tool_*`, `on_llm_*`
   events + error variants emit hash-chained envelopes (signed when a signer is configured).
@@ -122,7 +134,7 @@ side-channel metadata. This is the multi-agent ingestion surface.
   integration (RunnableLambda, @tool, FakeListLLM, chain composition,
   tool error path, JSONL round-trip).
 
-Roadmap beyond v0.1.0a3: a v0.1.0 stable release that locks the schema against the current `phionyx-core` engine (current release on PyPI), building on the multi-agent envelope wiring already shipped in `phionyx-core` v0.6.0.
+Roadmap beyond v0.1.0a4: a v0.1.0 stable release that locks the schema against the current `phionyx-core` engine (current release on PyPI), building on the multi-agent envelope wiring already shipped in `phionyx-core` v0.6.0.
 
 ## License
 
