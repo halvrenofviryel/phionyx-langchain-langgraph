@@ -41,7 +41,7 @@ from .audit_chain import (
     verify_chain,
 )
 
-__version__ = "0.1.0a1"
+from ._version import __version__
 
 _DEFAULT_SUPERVISOR_SENDER = ParticipantRef(
     id="langgraph.supervisor",

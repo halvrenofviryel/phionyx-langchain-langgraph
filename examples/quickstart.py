@@ -1,6 +1,6 @@
 """Quickstart: capture signed runtime evidence for a real LangChain run.
 
-This 60-line demo exercises every event type the v0.1.0a1 adapter
+This 60-line demo exercises every event type the v0.1.0a4 adapter
 supports — chain, tool, and LLM — and writes a verifiable evidence
 chain to disk. Run it::
 
@@ -71,10 +71,12 @@ def main() -> None:
     # --- 4. Verify chain integrity ----------------------------------------
     report = handler.verify_chain()
     status = "OK" if report["ok"] else "FAILED"
-    print(f"Verify chain: {status} ({report['envelope_count']} envelopes; "
+    print(f"Hash chain  : {status} ({report['envelope_count']} envelopes; "
           f"{len(report['errors'])} errors)")
 
     # --- 5. Export the chain ----------------------------------------------
+    print("Signatures  : NOT_EVALUATED (hash check only)")
+
     export_path = audit_root / "quickstart-evidence.jsonl"
     exported = handler.export_envelopes(export_path)
     print(f"Exported    : {exported} envelopes → {export_path}")
